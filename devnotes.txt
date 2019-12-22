@@ -1,1 +1,2 @@
+Guide on using TypeScript and Webpack with babylonjs: https://doc.babylonjs.com/features/npm_support#typescript-support
 Guide on using TypeScript and Webpack: https://www.typescriptlang.org/docs/handbook/react-&-webpack.htmlø
