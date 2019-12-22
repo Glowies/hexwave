@@ -1,0 +1,19 @@
+{
+  "name": "hexwave",
+  "version": "1.0.0",
+  "description": "Webpage for 2D wave simulation on a hexagonal grid.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Glowies/hexwave.git"
+  },
+  "author": "glowies",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Glowies/hexwave/issues"
+  },
+  "homepage": "https://github.com/Glowies/hexwave#readme"
+}
