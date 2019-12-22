@@ -3,7 +3,7 @@ module.exports = {
         app: './src/main.ts'
     },
     output: {
-        path: path.resolve(__dirname, 'dist'),
+        path: __dirname + "/dist/",
         filename: 'main.js'
     },
     resolve: {

@@ -1,2 +1,17 @@
 Guide on using TypeScript and Webpack with babylonjs: https://doc.babylonjs.com/features/npm_support#typescript-support
+
 Guide on using TypeScript and Webpack: https://www.typescriptlang.org/docs/handbook/react-&-webpack.htmlø
+
+To use the require keyword in TS: <START>
+
+If you are using Webpack as your build tool you can include the Webpack types.
+
+npm install --save-dev @types/webpack-env
+
+Update your tsconfig.json with the following under compilerOptions:
+
+"types": [
+      "webpack-env"
+    ]
+This allows you to do require.ensure and other Webpack specific functions.
+<END>
