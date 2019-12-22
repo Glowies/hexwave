@@ -19,5 +19,12 @@
   "dependencies": {
     "bootswatch": "^4.4.1",
     "jquery": "^3.4.1"
+  },
+  "devDependencies": {
+    "source-map-loader": "^0.2.4",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.4",
+    "webpack": "^4.41.4",
+    "webpack-cli": "^3.3.10"
   }
 }
