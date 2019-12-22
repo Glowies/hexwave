@@ -1,3 +1,9 @@
+# MacOS is dumb...
+.DS_Store
+
+# JetBrains Project Directory
+.idea/
+
 # Logs
 logs
 *.log
