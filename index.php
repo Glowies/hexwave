@@ -25,6 +25,7 @@
         <?php include_once('../navbar.php'); ?>
         -->
 
+        <canvas id="renderCanvas" touch-action="none" style="width: 100%; height: 100%;"></canvas>
 
     </div>
 
