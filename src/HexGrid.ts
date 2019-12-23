@@ -47,9 +47,16 @@ export class Hexagon {
 
     createMesh(scene: BABYLON.Scene): BABYLON.Mesh{
         let mesh = BABYLON.MeshBuilder.CreateCylinder("gridHex",
-            {height: this.height, diameter: this.radius * Math.sqrt(3)},
+            {height: this.height, diameter: this.radius * 1.9, tessellation: 6},
             scene);
         mesh.position = new BABYLON.Vector3(this.position[0], 0, this.position[1]);
+
+        // Rotate hexagon prism by 30 degrees around the y axis
+        let axis = new BABYLON.Vector3(0, 1, 0);
+        let angle = Math.PI / 6;
+        let quaternion = BABYLON.Quaternion.RotationAxis(axis, angle);
+        mesh.rotationQuaternion = quaternion;
+
         return mesh;
     }
 }
