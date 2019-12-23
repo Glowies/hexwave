@@ -1,40 +1,51 @@
 let $ = require("jquery");
-let BABYLON = require('babylonjs');
+import * as BABYLON from "babylonjs";
+import {HexGrid} from "./HexGrid";
 
 $(function(){
-    var canvas = document.getElementById("renderCanvas"); // Get the canvas element
-    var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+    let canvas: HTMLCanvasElement = <HTMLCanvasElement> document.getElementById("renderCanvas"); // Get the canvas element
+    let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
-    /******* Add the create scene function ******/
-    var createScene = function () {
-
-        // Create the scene space
-        var scene = new BABYLON.Scene(engine);
-
-        // Add a camera to the scene and attach it to the canvas
-        var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, new BABYLON.Vector3(0,0,5), scene);
+    let createScene = function () {
+        let scene = new BABYLON.Scene(engine);
+        let camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 4, 10, new BABYLON.Vector3(0,0,0), scene);
         camera.attachControl(canvas, true);
 
-        // Add lights to the scene
-        var light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
-        var light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
+        let light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+        let light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
 
-        // Add and manipulate meshes in the scene
-        var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:2}, scene);
+        showWorldAxis(10, scene);
+
+        let hexes = new HexGrid(64, 48, 0.1, 0.1, scene);
 
         return scene;
     };
-    /******* End of the create scene function ******/
 
-    var scene = createScene(); //Call the createScene function
+    let scene = createScene();
 
-    // Register a render loop to repeatedly render the scene
     engine.runRenderLoop(function () {
         scene.render();
     });
 
-    // Watch for browser/canvas resize events
     window.addEventListener("resize", function () {
         engine.resize();
     });
 })
+
+function showWorldAxis(size: number, scene: BABYLON.Scene) {
+    let axisX = BABYLON.Mesh.CreateLines("axisX", [
+        BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0),
+        new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)
+    ], scene);
+    axisX.color = new BABYLON.Color3(1, 0, 0);
+    let axisY = BABYLON.Mesh.CreateLines("axisY", [
+        BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3( -0.05 * size, size * 0.95, 0),
+        new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3( 0.05 * size, size * 0.95, 0)
+    ], scene);
+    axisY.color = new BABYLON.Color3(0, 1, 0);
+    var axisZ = BABYLON.Mesh.CreateLines("axisZ", [
+        BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3( 0 , -0.05 * size, size * 0.95),
+        new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3( 0, 0.05 * size, size * 0.95)
+    ], scene);
+    axisZ.color = new BABYLON.Color3(0, 0, 1);
+};
