@@ -25,7 +25,7 @@ export class HexGrid {
                     zero[0] + offset[0],
                     zero[1] + offset[1]
                 ]
-                this.grid[i][j] = new Hexagon(position, hexRadius, hexHeight, scene);
+                this.grid[i][j] = new Hexagon(position, hexRadius, hexHeight * (Math.cos(i*Math.PI / height * 4) + Math.sin(j*Math.PI / height * 4)), scene);
             }
         }
     }
@@ -47,7 +47,7 @@ export class Hexagon {
 
     createMesh(scene: BABYLON.Scene): BABYLON.Mesh{
         let mesh = BABYLON.MeshBuilder.CreateCylinder("gridHex",
-            {height: this.height, diameter: this.radius * 1.9, tessellation: 6},
+            {height: this.height, diameter: this.radius * 1.8, tessellation: 6},
             scene);
         mesh.position = new BABYLON.Vector3(this.position[0], 0, this.position[1]);
 
@@ -56,6 +56,11 @@ export class Hexagon {
         let angle = Math.PI / 6;
         let quaternion = BABYLON.Quaternion.RotationAxis(axis, angle);
         mesh.rotationQuaternion = quaternion;
+
+        // Highlight the edges of the hexagon
+        mesh.enableEdgesRendering();
+        mesh.edgesWidth = 1.0;
+        mesh.edgesColor = new BABYLON.Color4(1.00, 0.72, 0.77, 1);
 
         return mesh;
     }
