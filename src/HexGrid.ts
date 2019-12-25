@@ -25,7 +25,7 @@ export class HexGrid {
                     zero[0] + offset[0],
                     zero[1] + offset[1]
                 ]
-                this.grid[i][j] = new Hexagon(position, hexRadius, hexHeight * (Math.cos(i*Math.PI / height * 4) + Math.sin(j*Math.PI / height * 4)), scene);
+                this.grid[i][j] = new Hexagon(position, hexRadius, 0.5 + hexHeight * (Math.cos(i*Math.PI / height * 4) + Math.sin(j*Math.PI / height * 4)), scene);
             }
         }
     }
