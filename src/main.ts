@@ -1,6 +1,6 @@
 let $ = require("jquery");
 import * as BABYLON from "babylonjs";
-import {HexGrid, HeightGrid} from "./HexGrid";
+import {HexGrid, HeightGrid, ScaleGrid} from "./HexGrid";
 import {Hexagon} from "./Hexagon";
 
 $(function(){
@@ -10,16 +10,28 @@ $(function(){
     let createScene = function () {
         let scene = new BABYLON.Scene(engine);
         scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
-        let camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 4, 100, new BABYLON.Vector3(0,0,0), scene);
+        let camera = new BABYLON.ArcRotateCamera("Camera", -1.780818897873594, 0.7163083210065703, 100, new BABYLON.Vector3(0,-10,0), scene);
         camera.attachControl(canvas, true);
 
-        let light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
-        let light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
+        let keyLight = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(1, -2, 0.4), scene);
+        keyLight.intensity = 0.7;
+        let fillLight = new BABYLON.DirectionalLight("light2", new BABYLON.Vector3(-0.4, -1, 1), scene);
+        fillLight.intensity = 0.3;
+        let rimLight = new BABYLON.DirectionalLight("light3", new BABYLON.Vector3(0, -1, -1), scene);
+        rimLight.intensity = 0.4;
+        let ambientLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+        ambientLight.intensity = 0.3;
 
         showWorldAxis(10, scene);
 
         let zeroHex = Hexagon.ZeroHex();
-        let hexes: HexGrid = new HeightGrid(32, 32, 3, 1, zeroHex, scene);
+        let hexes: HexGrid = new ScaleGrid(32, 32, undefined, undefined, zeroHex, scene);
+
+        for(let i=0; i<32; i++){
+            for(let j=0; j<32; j++){
+                hexes.setHexValue(i, j, Math.sin(i+j/5));
+            }
+        }
 
         return scene;
     };

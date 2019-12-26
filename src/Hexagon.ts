@@ -3,10 +3,12 @@ import * as BABYLON from "babylonjs";
 export class HexagonWrapper {
     hex: Hexagon;
     mesh: BABYLON.Mesh;
+    value: number;
 
     constructor(hex: Hexagon, scene: BABYLON.Scene) {
         this.hex = hex;
         this.mesh = this.createMesh(scene);
+        this.value = 0;
     }
 
     createMesh(scene: BABYLON.Scene): BABYLON.Mesh {
@@ -51,24 +53,43 @@ export class HexagonWrapper {
         this.mesh.rotationQuaternion = quaternion;
     }
 
+    getHeight(): number {
+        return this.hex.getHeight();
+    }
     setHeight(height: number): void {
         this.hex.setHeight(height);
         this.updateMeshHeight();
     }
 
+    getRotation(): number {
+        return this.hex.getRotation();
+    }
     setRotation(rot: number): void {
         this.hex.setRotation(rot);
         this.updateMeshRotation();
     }
 
+    getRadius(): number {
+        return this.hex.getRadius();
+    }
     setRadius(r: number): void {
         this.hex.setRadius(r);
         this.updateMeshRadius();
     }
 
+    getPosition(): BABYLON.Vector3 {
+        return this.hex.getPosition();
+    }
     setPosition(pos: BABYLON.Vector3): void {
         this.hex.setPosition(pos);
         this.updateMeshPosition();
+    }
+
+    getValue(): number {
+        return this.value;
+    }
+    setValue(val: number): void {
+        this.value = val;
     }
 }
 
