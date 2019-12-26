@@ -9,7 +9,8 @@ $(function(){
 
     let createScene = function () {
         let scene = new BABYLON.Scene(engine);
-        let camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 4, 10, new BABYLON.Vector3(0,0,0), scene);
+        scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+        let camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 4, 100, new BABYLON.Vector3(0,0,0), scene);
         camera.attachControl(canvas, true);
 
         let light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);

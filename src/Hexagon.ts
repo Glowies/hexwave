@@ -80,7 +80,7 @@ export class Hexagon {
     value: number;
 
     static ZeroHex(): Hexagon {
-        return new Hexagon(BABYLON.Vector3.Zero(), 1, 0, 0.1, 0);
+        return new Hexagon(BABYLON.Vector3.Zero(), 1, 0, 1, 0);
     }
 
     static Copy(hex: Hexagon): Hexagon {

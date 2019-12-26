@@ -18,16 +18,13 @@
     -->
 </head>
 
-<body role="document" style="background-color: white; height:100%; -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none; -o-user-select:none;">
-    <div id="main" class="container" role="main">
+<body role="document" style="background-color: black; height:100%; -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none; -o-user-select:none;">
+    <!-- TODO: REPLACE
+    <?php include_once('../navbar.php'); ?>
+    -->
 
-        <!-- TODO: REPLACE
-        <?php include_once('../navbar.php'); ?>
-        -->
+    <canvas id="renderCanvas" touch-action="none" style="position:fixed;top:0px;width: 100%; height: 100%;"></canvas>
 
-        <canvas id="renderCanvas" touch-action="none" style="width: 100%; height: 100%;"></canvas>
-
-    </div>
 
     <!-- MAIN -->
     <script src="./dist/main.js"></script>
