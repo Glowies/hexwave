@@ -1,6 +1,6 @@
 let $ = require("jquery");
 import * as BABYLON from "babylonjs";
-import {HexGrid, HeightGrid, ScaleGrid} from "./HexGrid";
+import {HexGrid, HeightGrid, ScaleGrid, RotationGrid, RadiusGrid} from "./HexGrid";
 import {Hexagon} from "./Hexagon";
 
 $(function(){
@@ -25,7 +25,7 @@ $(function(){
         showWorldAxis(10, scene);
 
         let zeroHex = Hexagon.ZeroHex();
-        let hexes: HexGrid = new ScaleGrid(32, 32, undefined, undefined, zeroHex, scene);
+        let hexes: HexGrid = new RadiusGrid(32, 32, undefined, undefined, zeroHex, scene);
 
         for(let i=0; i<32; i++){
             for(let j=0; j<32; j++){

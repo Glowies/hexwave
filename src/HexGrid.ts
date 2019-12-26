@@ -117,3 +117,29 @@ export class ScaleGrid extends HexGrid {
         hex.setHeight(scaledValue);
     }
 }
+
+export class RotationGrid extends HexGrid { // Looks better with arrows instead of hexagons.
+    constructor(width: number, height: number, zero=0, range=Math.PI/2, refHex: Hexagon, scene: BABYLON.Scene){
+        super(width, height, zero, range, refHex, scene);
+    }
+
+    updateGridMesh(i: number, j: number): void {
+        let scaledValue = this.getHexValue(i,j) * this.range + this.zero;
+        let hex = this.getHex(i,j);
+        hex.setRotation(scaledValue);
+    }
+}
+
+export class RadiusGrid extends HexGrid {
+    constructor(width: number, height: number, zero=1, range=1, refHex: Hexagon, scene: BABYLON.Scene){
+        let defaultZero = refHex.getRadius()/2;
+        let defaultRange = refHex.getRadius()/2;
+        super(width, height, defaultZero, defaultRange, refHex, scene);
+    }
+
+    updateGridMesh(i: number, j: number): void {
+        let scaledValue = this.getHexValue(i,j) * this.range + this.zero;
+        let hex = this.getHex(i,j);
+        hex.setRadius(scaledValue);
+    }
+}
