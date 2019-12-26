@@ -1,67 +1,49 @@
 import * as BABYLON from "babylonjs";
+import {Hexagon, HexagonWrapper} from "./Hexagon";
 
-export class HexGrid {
-    grid: Hexagon[][];
-    hexRadius: number;
-    coefficient: number;
+export abstract class HexGrid {
+    grid: HexagonWrapper[][];
+    width: number;
+    height: number;
+    refHex: Hexagon; // Hexagon whose values will be taken as reference for other hexagons
+    zero: number;
+    range: number; // The range of values that correspond to [-1,1]
 
-    constructor(width: number, height: number, hexRadius: number, coef: number, scene: BABYLON.Scene){
-        this.coefficient = coef;
-        this.hexRadius = hexRadius;
+    constructor(width: number, height: number, zero: number, range: number, refHex: Hexagon, scene: BABYLON.Scene){
+        this.width = width;
+        this.height = height;
+        this.zero = zero;
+        this.range = range;
+        this.refHex = refHex;
+
+        // Instantiate and position hexagons
         this.grid = [];
+        let hexDistance = refHex.getRadius() * 1.1;
+
         for(let i=0; i<width; i++){
             this.grid[i] = [];
             for(let j=0; j<height; j++){
                 let hexHeight = 1;
-                let zero: [number, number] = [
-                    -hexRadius*Math.sqrt(3)*(2*width + 1)/4,
-                    3*hexRadius*height/4
-                ];
-                let offset: [number, number] = [
-                    ((i + j/2) % width) * hexRadius*Math.sqrt(3),
-                    -j*hexRadius*3/2
-                ];
-                let position: [number, number] = [
-                    zero[0] + offset[0],
-                    zero[1] + offset[1]
-                ]
-                this.grid[i][j] = new Hexagon(position, hexRadius, 0.5 + hexHeight * (Math.cos(i*Math.PI / height * 4) + Math.sin(j*Math.PI / height * 4)), scene);
+                let zero = new BABYLON.Vector3(
+                    -hexDistance*Math.sqrt(3)*(2*width + 1)/4,
+                    0,
+                    3*hexDistance*height/4
+                );
+                let offset = new BABYLON.Vector3(
+                    ((i + j/2) % width) * hexDistance*Math.sqrt(3),
+                    0,
+                    -j*hexDistance*3/2
+                );
+
+                let gridHex = Hexagon.Copy(refHex);
+                gridHex.setPosition(zero.add(offset));
+
+                this.grid[i][j] = new HexagonWrapper(gridHex, scene);
             }
         }
     }
-
 }
 
-export class Hexagon {
-    position: [number, number];
-    radius: number;
-    height: number;
-    mesh: BABYLON.Mesh;
+export class HeightGrid extends HexGrid {
 
-    constructor(position: [number, number], radius: number, height: number, scene: BABYLON.Scene){
-        this.position = position;
-        this.radius = radius;
-        this.height = height;
-        this.mesh = this.createMesh(scene);
-    }
-
-    createMesh(scene: BABYLON.Scene): BABYLON.Mesh{
-        let mesh = BABYLON.MeshBuilder.CreateCylinder("gridHex",
-            {height: this.height, diameter: this.radius * 1.8, tessellation: 6},
-            scene);
-        mesh.position = new BABYLON.Vector3(this.position[0], 0, this.position[1]);
-
-        // Rotate hexagon prism by 30 degrees around the y axis
-        let axis = new BABYLON.Vector3(0, 1, 0);
-        let angle = Math.PI / 6;
-        let quaternion = BABYLON.Quaternion.RotationAxis(axis, angle);
-        mesh.rotationQuaternion = quaternion;
-
-        // Highlight the edges of the hexagon
-        mesh.enableEdgesRendering();
-        mesh.edgesWidth = 1.0;
-        mesh.edgesColor = new BABYLON.Color4(1.00, 0.72, 0.77, 1);
-
-        return mesh;
-    }
 }

@@ -1,6 +1,7 @@
 let $ = require("jquery");
 import * as BABYLON from "babylonjs";
-import {HexGrid} from "./HexGrid";
+import {HexGrid, HeightGrid} from "./HexGrid";
+import {Hexagon} from "./Hexagon";
 
 $(function(){
     let canvas: HTMLCanvasElement = <HTMLCanvasElement> document.getElementById("renderCanvas"); // Get the canvas element
@@ -16,7 +17,8 @@ $(function(){
 
         showWorldAxis(10, scene);
 
-        let hexes = new HexGrid(64, 48, 0.1, 0.1, scene);
+        let zeroHex = Hexagon.ZeroHex();
+        let hexes: HexGrid = new HeightGrid(32, 32, 3, 1, zeroHex, scene);
 
         return scene;
     };
