@@ -2,14 +2,14 @@ import * as BABYLON from "babylonjs";
 import {Hexagon, HexagonWrapper} from "./Hexagon";
 
 export abstract class HexGrid {
-    private _grid: HexagonWrapper[][];
+    private readonly _grid: HexagonWrapper[][];
     width: number;
     height: number;
     refHex: Hexagon; // Hexagon whose values will be taken as reference for other hexagons
     zero: number;
     range: number; // The range of values [zero - range, zero + range] that correspond to [-1,1]
 
-    constructor(width: number, height: number, zero=1, range=1, refHex: Hexagon, scene: BABYLON.Scene){
+    protected constructor(width: number, height: number, zero=1, range=1, refHex: Hexagon, scene: BABYLON.Scene){
         this.width = width;
         this.height = height;
         this.zero = zero;
@@ -45,20 +45,6 @@ export abstract class HexGrid {
 
     getHex(i: number, j: number): HexagonWrapper {
         return this._grid[i][j];
-    }
-
-    getZero(): number {
-        return this.zero;
-    }
-    setZero(zero: number): void {
-        this.zero = zero;
-    }
-
-    getRange(): number {
-        return this.range;
-    }
-    setRange(range: number): void {
-        this.range = range;
     }
 
     getHexValue(i: number, j: number): number {

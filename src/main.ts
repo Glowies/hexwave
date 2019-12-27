@@ -45,7 +45,7 @@ $(function(){
     window.addEventListener("resize", function () {
         engine.resize();
     });
-})
+});
 
 function showWorldAxis(size: number, scene: BABYLON.Scene) {
     let axisX = BABYLON.Mesh.CreateLines("axisX", [
@@ -58,9 +58,9 @@ function showWorldAxis(size: number, scene: BABYLON.Scene) {
         new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3( 0.05 * size, size * 0.95, 0)
     ], scene);
     axisY.color = new BABYLON.Color3(0, 1, 0);
-    var axisZ = BABYLON.Mesh.CreateLines("axisZ", [
+    let axisZ = BABYLON.Mesh.CreateLines("axisZ", [
         BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3( 0 , -0.05 * size, size * 0.95),
         new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3( 0, 0.05 * size, size * 0.95)
     ], scene);
     axisZ.color = new BABYLON.Color3(0, 0, 1);
-};
+}

@@ -49,8 +49,7 @@ export class HexagonWrapper {
 
     updateMeshRotation(): void {
         let axis = new BABYLON.Vector3(0, 1, 0);
-        let quaternion = BABYLON.Quaternion.RotationAxis(axis, this.hex.getRotation() + Math.PI/6);
-        this.mesh.rotationQuaternion = quaternion;
+        this.mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, this.hex.getRotation() + Math.PI/6);
     }
 
     getHeight(): number {
