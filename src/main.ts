@@ -34,8 +34,9 @@ $(function(){
 
 
         propagator = new SourcePropagator(hexes);
-        propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 0, .5, 1, 0));
-        propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 0, .5, 1, 0));
+        propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 0), 0, -1,0, 1, 1));
+        //propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 0, -1,0, .5, 1));
+        //propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 0, -1, 0, .5, 1));
 
         return scene;
     };

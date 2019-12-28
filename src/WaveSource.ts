@@ -1,6 +1,13 @@
 import {Vector3} from "babylonjs";
 
 export abstract class WaveSource {
+    get endTime(): number {
+        return this._endTime;
+    }
+
+    set endTime(value: number) {
+        this._endTime = value;
+    }
 
     get position(): Vector3 {
         return this._position;
@@ -10,13 +17,24 @@ export abstract class WaveSource {
         this._position = value;
         this._posChanged = true;
     }
+    get startTime(): number {
+        return this._startTime;
+    }
+
+    set startTime(value: number) {
+        this._startTime = value;
+    }
 
     private _position: Vector3;
     private _posChanged: boolean;
+    private _startTime: number;
+    private _endTime: number;
 
-    protected constructor(pos: Vector3) {
+    protected constructor(pos: Vector3, start: number, end: number) {
         this._position = pos;
         this._posChanged = false;
+        this._startTime = start;
+        this._endTime = end;
     }
 
     public positionUpdated(): void {
@@ -26,7 +44,7 @@ export abstract class WaveSource {
     abstract evaluate(totalTime: number): number;
 }
 
-export class SinusoidSource extends WaveSource {
+export abstract class PeriodicSource extends WaveSource {
     get amplitude(): number {
         return this._amplitude;
     }
@@ -43,13 +61,6 @@ export class SinusoidSource extends WaveSource {
         this._frequency = value;
     }
 
-    get startTime(): number {
-        return this._startTime;
-    }
-
-    set startTime(value: number) {
-        this._startTime = value;
-    }
     get phase(): number {
         return this._phase;
     }
@@ -60,20 +71,20 @@ export class SinusoidSource extends WaveSource {
     private _phase: number;
     private _amplitude: number;
     private _frequency: number;
-    private _startTime: number;
 
-    constructor(pos: Vector3, phase: number, amplitude: number, frequency: number, startTime: number){
-        super(pos);
+    constructor(pos: Vector3, start: number, end: number, phase: number, amplitude: number, frequency: number){
+        super(pos, start, end);
         this._phase = phase;
         this._amplitude = amplitude;
         this._frequency = frequency;
-        this._startTime = startTime;
     }
+}
 
+export class SinusoidSource extends PeriodicSource {
     evaluate(totalTime: number): number {
         if(totalTime < 0)
             return 0;
-        let frequencyComponent = 2 * Math.PI * this._frequency * (totalTime - this._startTime);
-        return this._amplitude * Math.sin(frequencyComponent + this._phase);
+        let frequencyComponent = 2 * Math.PI * this.frequency * (totalTime - this.startTime);
+        return this.amplitude * Math.sin(frequencyComponent + this.phase);
     }
 }

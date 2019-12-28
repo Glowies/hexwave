@@ -32,6 +32,7 @@ export abstract class Propagator {
 export class SourcePropagator extends Propagator {
     private _delayMatrices: number[][][];
     //TODO: Maybe move waveSpeed to superclass.
+    // Wavespeed is actually 1/waveSpeed ...
     private _waveSpeed: number;
 
     constructor(grid: HexGrid) {
