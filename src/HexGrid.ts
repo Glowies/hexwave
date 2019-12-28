@@ -159,8 +159,8 @@ export class RotationGrid extends HexGrid { // Looks better with arrows instead 
 
 export class RadiusGrid extends HexGrid {
     constructor(width: number, height: number, zero=1, range=1, refHex: Hexagon, scene: BABYLON.Scene){
-        let defaultZero = refHex.getRadius()/2;
-        let defaultRange = refHex.getRadius()/2 * 1.4;
+        let defaultZero = refHex.getRadius()/2 * 1.5;
+        let defaultRange = refHex.getRadius()/2 * 1.3;
         super(width, height, defaultZero, defaultRange, refHex, scene);
     }
 

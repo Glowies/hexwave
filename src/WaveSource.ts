@@ -82,9 +82,43 @@ export abstract class PeriodicSource extends WaveSource {
 
 export class SinusoidSource extends PeriodicSource {
     evaluate(totalTime: number): number {
-        if(totalTime < 0)
+        if(totalTime < this.startTime)
             return 0;
         let frequencyComponent = 2 * Math.PI * this.frequency * (totalTime - this.startTime);
         return this.amplitude * Math.sin(frequencyComponent + this.phase);
+    }
+}
+
+export class SquareSource extends PeriodicSource {
+    evaluate(totalTime: number): number {
+        if(totalTime < this.startTime)
+            return 0;
+        let period = 1 / this.frequency;
+        let phaseShift = period * this.phase / 2.0 / Math.PI;
+        let remainder = (totalTime - this.startTime + phaseShift) % period;
+        return (remainder < period/2.0) ? this.amplitude : -this.amplitude;
+    }
+}
+
+export class SawtoothSource extends PeriodicSource {
+    evaluate(totalTime: number): number {
+        if(totalTime < this.startTime)
+            return 0;
+        let period = 1 / this.frequency;;
+        let phaseShift = period * this.phase / 2.0 / Math.PI;
+        let remainder = (totalTime - this.startTime + phaseShift) % period;
+        return (2 * remainder / period - 1) * this.amplitude;
+    }
+}
+
+export class TriangleSource extends PeriodicSource {
+    evaluate(totalTime: number): number {
+        if(totalTime < this.startTime)
+            return 0;
+        let period = 1 / this.frequency;;
+        let phaseShift = period * this.phase / 2.0 / Math.PI;
+        let remainder = (totalTime - this.startTime + period / 4.0 + phaseShift) % period;
+        let subRemainder = remainder % (period / 2.0);
+        return (4 * subRemainder / period - 1) * this.amplitude * (remainder > period / 2.0 ? 1 : -1);
     }
 }

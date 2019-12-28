@@ -3,7 +3,7 @@ import * as BABYLON from "babylonjs";
 import {HexGrid, HeightGrid, ScaleGrid, RotationGrid, RadiusGrid} from "./HexGrid";
 import {Hexagon} from "./Hexagon";
 import {Propagator, SourcePropagator} from "./Propagator";
-import {WaveSource, SinusoidSource} from "./WaveSource";
+import {WaveSource, SinusoidSource, SquareSource, SawtoothSource, TriangleSource} from "./WaveSource";
 
 
 $(function(){
@@ -30,11 +30,11 @@ $(function(){
         showWorldAxis(10, scene);
 
         let zeroHex = Hexagon.ZeroHex();
-        let hexes: HexGrid = new RadiusGrid(32, 32, undefined, undefined, zeroHex, scene);
+        let hexes: HexGrid = new RadiusGrid(48, 48, undefined, undefined, zeroHex, scene);
 
 
         propagator = new SourcePropagator(hexes);
-        propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 0), 0, -1,0, 1, 1));
+        propagator.addSource(new SawtoothSource(new BABYLON.Vector3(0, 0, 0), 1, -1, 0, -1, 0.4));
         //propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 0, -1,0, .5, 1));
         //propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 0, -1, 0, .5, 1));
 
