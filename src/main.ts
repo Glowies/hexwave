@@ -2,10 +2,15 @@ let $ = require("jquery");
 import * as BABYLON from "babylonjs";
 import {HexGrid, HeightGrid, ScaleGrid, RotationGrid, RadiusGrid} from "./HexGrid";
 import {Hexagon} from "./Hexagon";
+import {Propagator, SourcePropagator} from "./Propagator";
+import {WaveSource, SinusoidSource} from "./WaveSource";
+
 
 $(function(){
     let canvas: HTMLCanvasElement = <HTMLCanvasElement> document.getElementById("renderCanvas"); // Get the canvas element
     let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+    let propagator: Propagator;
 
     let createScene = function () {
         let scene = new BABYLON.Scene(engine);
@@ -27,11 +32,10 @@ $(function(){
         let zeroHex = Hexagon.ZeroHex();
         let hexes: HexGrid = new RadiusGrid(32, 32, undefined, undefined, zeroHex, scene);
 
-        for(let i=0; i<32; i++){
-            for(let j=0; j<32; j++){
-                hexes.setHexValue(i, j, Math.sin(i+j/5));
-            }
-        }
+
+        propagator = new SourcePropagator(hexes);
+        propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 0, .5, 1, 0));
+        propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 0, .5, 1, 0));
 
         return scene;
     };
@@ -40,6 +44,8 @@ $(function(){
 
     engine.runRenderLoop(function () {
         scene.render();
+        propagator.update(engine.getDeltaTime() / 1000.0);
+        //console.log(engine.getFps());
     });
 
     window.addEventListener("resize", function () {

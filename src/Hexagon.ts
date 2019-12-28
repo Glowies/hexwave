@@ -17,10 +17,15 @@ export class HexagonWrapper {
             scene);
         this.mesh = mesh;
 
+        var material = new BABYLON.StandardMaterial("sibel", scene);
+        material.alpha = 1;
+        material.diffuseColor = new BABYLON.Color3(1.00,0.08,0.58);
+        mesh.material = material;
+
         this.updateMesh();
 
         // Highlight the edges of the hexagon
-        mesh.enableEdgesRendering();
+        //mesh.enableEdgesRendering();
         mesh.edgesWidth = 1.0;
         mesh.edgesColor = new BABYLON.Color4(1.00, 0.72, 0.77, 1);
 
