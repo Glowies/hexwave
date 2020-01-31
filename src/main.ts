@@ -3,7 +3,7 @@ import * as BABYLON from "babylonjs";
 import {HexGrid, HeightGrid, ScaleGrid, RotationGrid, RadiusGrid} from "./HexGrid";
 import {Hexagon} from "./Hexagon";
 import {Propagator, SourcePropagator} from "./Propagator";
-import {WaveSource, SinusoidSource, SquareSource, SawtoothSource, TriangleSource} from "./WaveSource";
+import {WaveSource, SinusoidSource, SquareSource, SawtoothSource, TriangleSource, MicSource} from "./WaveSource";
 
 
 $(function(){
@@ -14,7 +14,7 @@ $(function(){
 
     let createScene = function () {
         let scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+        scene.clearColor = new BABYLON.Color4(0,0,0, 1);
         let camera = new BABYLON.ArcRotateCamera("Camera", -1.780818897873594, 0.7163083210065703, 100, new BABYLON.Vector3(0,-10,0), scene);
         camera.attachControl(canvas, true);
 
@@ -27,16 +27,18 @@ $(function(){
         let ambientLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
         ambientLight.intensity = 0.3;
 
-        showWorldAxis(10, scene);
+        //showWorldAxis(10, scene);
 
         let zeroHex = Hexagon.ZeroHex();
-        let hexes: HexGrid = new RadiusGrid(48, 48, undefined, undefined, zeroHex, scene);
+        let hexes: HexGrid = new ScaleGrid(48, 48, undefined, undefined, zeroHex, scene);
 
 
         propagator = new SourcePropagator(hexes);
-        propagator.addSource(new SawtoothSource(new BABYLON.Vector3(0, 0, 0), 1, -1, 0, -1, 0.4));
-        //propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 0, -1,0, .5, 1));
-        //propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 0, -1, 0, .5, 1));
+        // propagator.addSource(new SinusoidSource(hexes.getHex(12,24).getPosition(), 1, -1, 0, .5, 2));
+        propagator.addSource(new MicSource(hexes.getHex(12,24).getPosition(), 1, -1, 70));
+        // propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 17), 1, -1, 0, .5, 0.5));
+        //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 1, -1,0, .5, 2));
+        //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 1, -1, 0, .5, 2));
 
         return scene;
     };

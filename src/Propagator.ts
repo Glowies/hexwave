@@ -32,13 +32,12 @@ export abstract class Propagator {
 export class SourcePropagator extends Propagator {
     private _delayMatrices: number[][][];
     //TODO: Maybe move waveSpeed to superclass.
-    // Wavespeed is actually 1/waveSpeed ...
     private _waveSpeed: number;
 
     constructor(grid: HexGrid) {
         super(grid);
         this._delayMatrices = [];
-        this._waveSpeed = 0.1;
+        this._waveSpeed = 40;
     }
 
     public addSource(src: WaveSource): void {
@@ -61,8 +60,9 @@ export class SourcePropagator extends Propagator {
             for(let j=0; j<this._grid.height; j++){
                 let sum = 0;
                 for(let srcIndex in this._sources){
-                    let relativeTime = this._timeElapsed - this._delayMatrices[srcIndex][i][j] * this._waveSpeed;
-                    sum += this._sources[srcIndex].evaluate(relativeTime);
+                    let distance = this._delayMatrices[srcIndex][i][j];
+                    let relativeTime = this._timeElapsed - distance / this._waveSpeed;
+                    sum += this._sources[srcIndex].evaluate(relativeTime, distance);
                 }
                 this._grid.setHexValue(i, j, sum);
             }

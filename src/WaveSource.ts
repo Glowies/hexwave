@@ -41,7 +41,45 @@ export abstract class WaveSource {
         this._posChanged = false;
     }
 
-    abstract evaluate(totalTime: number): number;
+    abstract evaluate(totalTime: number, distance: number): number;
+}
+
+export class MicSource extends WaveSource {
+    private _bufferSize: number;
+    private _buffer: AudioBuffer;
+    private _gain: number;
+    private _maxDistance: number;
+
+    constructor(pos: Vector3, start: number, end: number, maxDistance: number) {
+        super(pos, start, end);
+        this._maxDistance = maxDistance;
+        this._bufferSize = 512;
+        this._buffer = new AudioBuffer({length: this._bufferSize, numberOfChannels: 1, sampleRate: 48000});
+        this._gain = 10;
+
+        navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(this.mediaCallback.bind(this));
+    }
+
+    mediaCallback(stream: MediaStream): void{
+        let context = new AudioContext();
+        const source = context.createMediaStreamSource(stream);
+        const processor = context.createScriptProcessor(this._bufferSize, 1, 1);
+
+        source.connect(processor);
+        processor.connect(context.destination);
+
+        processor.onaudioprocess = this.onAudioProcess.bind(this);
+    }
+
+    onAudioProcess(e: AudioProcessingEvent): void{
+        this._buffer = e.inputBuffer;
+    }
+
+    evaluate(totalTime: number, distance: number): number{
+        let n = this._bufferSize - 1;
+        let index = Math.max(0, n - Math.floor(distance / this._maxDistance * n));
+        return this._buffer.getChannelData(0)[index] * this._gain;
+    }
 }
 
 export abstract class PeriodicSource extends WaveSource {
@@ -81,7 +119,7 @@ export abstract class PeriodicSource extends WaveSource {
 }
 
 export class SinusoidSource extends PeriodicSource {
-    evaluate(totalTime: number): number {
+    evaluate(totalTime: number, distance: number): number {
         if(totalTime < this.startTime)
             return 0;
         let frequencyComponent = 2 * Math.PI * this.frequency * (totalTime - this.startTime);
@@ -90,7 +128,7 @@ export class SinusoidSource extends PeriodicSource {
 }
 
 export class SquareSource extends PeriodicSource {
-    evaluate(totalTime: number): number {
+    evaluate(totalTime: number, distance: number): number {
         if(totalTime < this.startTime)
             return 0;
         let period = 1 / this.frequency;
@@ -101,10 +139,10 @@ export class SquareSource extends PeriodicSource {
 }
 
 export class SawtoothSource extends PeriodicSource {
-    evaluate(totalTime: number): number {
+    evaluate(totalTime: number, distance: number): number {
         if(totalTime < this.startTime)
             return 0;
-        let period = 1 / this.frequency;;
+        let period = 1 / this.frequency;
         let phaseShift = period * this.phase / 2.0 / Math.PI;
         let remainder = (totalTime - this.startTime + phaseShift) % period;
         return (2 * remainder / period - 1) * this.amplitude;
@@ -112,10 +150,10 @@ export class SawtoothSource extends PeriodicSource {
 }
 
 export class TriangleSource extends PeriodicSource {
-    evaluate(totalTime: number): number {
+    evaluate(totalTime: number, distance: number): number {
         if(totalTime < this.startTime)
             return 0;
-        let period = 1 / this.frequency;;
+        let period = 1 / this.frequency;
         let phaseShift = period * this.phase / 2.0 / Math.PI;
         let remainder = (totalTime - this.startTime + period / 4.0 + phaseShift) % period;
         let subRemainder = remainder % (period / 2.0);
