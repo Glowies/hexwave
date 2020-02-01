@@ -49,6 +49,8 @@ export class MicSource extends WaveSource {
     private _buffer: AudioBuffer;
     private _gain: number;
     private _maxDistance: number;
+    private _triggerIndex: number;
+    private _triggerValue: number;
 
     constructor(pos: Vector3, start: number, end: number, maxDistance: number) {
         super(pos, start, end);
@@ -56,6 +58,8 @@ export class MicSource extends WaveSource {
         this._bufferSize = 512;
         this._buffer = new AudioBuffer({length: this._bufferSize, numberOfChannels: 1, sampleRate: 48000});
         this._gain = 10;
+        this._triggerIndex = 0;
+        this._triggerValue = 0;
 
         navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(this.mediaCallback.bind(this));
     }
@@ -73,11 +77,24 @@ export class MicSource extends WaveSource {
 
     onAudioProcess(e: AudioProcessingEvent): void{
         this._buffer = e.inputBuffer;
+
+        let triggerWindow = 4;
+        // Find trigger index
+        outer: for(let i=this._bufferSize - triggerWindow; i > triggerWindow - 1; i--){
+            for(let j=0; j<triggerWindow; j++){
+                if(this._buffer.getChannelData(0)[i - j - 1] > this._triggerValue ||
+                    this._buffer.getChannelData(0)[i + j] < this._triggerValue){
+                    continue outer;
+                }
+            }
+            this._triggerIndex = i;
+            break;
+        }
     }
 
     evaluate(totalTime: number, distance: number): number{
         let n = this._bufferSize - 1;
-        let index = Math.max(0, n - Math.floor(distance / this._maxDistance * n));
+        let index = Math.max(0, (this._triggerIndex - Math.floor(distance / this._maxDistance * n)) % n);
         return this._buffer.getChannelData(0)[index] * this._gain;
     }
 }
