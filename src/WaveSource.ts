@@ -67,9 +67,17 @@ export class MicSource extends WaveSource {
     mediaCallback(stream: MediaStream): void{
         let context = new AudioContext();
         const source = context.createMediaStreamSource(stream);
+        const compressor = new DynamicsCompressorNode(context, {
+            attack: 0.001,
+            knee: 20,
+            ratio: 14,
+            release: .125,
+            threshold: -32
+        });
         const processor = context.createScriptProcessor(this._bufferSize, 1, 1);
 
-        source.connect(processor);
+        source.connect(compressor);
+        compressor.connect(processor);
         processor.connect(context.destination);
 
         processor.onaudioprocess = this.onAudioProcess.bind(this);

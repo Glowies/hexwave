@@ -14,7 +14,9 @@ $(function(){
 
     let createScene = function () {
         let scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color4(0,0,0, 1);
+        scene.clearColor = new BABYLON.Color4(17/255,17/255,17/255, 1);
+        // scene.clearColor = new BABYLON.Color4(94/255,140/255,166/255, 1);
+        // scene.clearColor = new BABYLON.Color4(0,0,0, 1); black
         let camera = new BABYLON.ArcRotateCamera("Camera", -1.780818897873594, 0.7163083210065703, 100, new BABYLON.Vector3(0,-10,0), scene);
         camera.attachControl(canvas, true);
 

@@ -20,8 +20,10 @@ export class HexagonWrapper {
         var material = new BABYLON.StandardMaterial("sibel", scene);
         material.alpha = 1;
 
-        material.diffuseColor = new BABYLON.Color3(1.00,0.08,0.58);
-        //material.diffuseColor = new BABYLON.Color3(207/255,127/255,130/255);
+        material.diffuseColor = new BABYLON.Color3(190/255,190/255,190/255);
+        // material.diffuseColor = new BABYLON.Color3(255/255,158/255,161/255);
+        // material.diffuseColor = new BABYLON.Color3(1.00,0.08,0.58);
+        // material.diffuseColor = new BABYLON.Color3(207/255,127/255,130/255);
         material.specularColor = new BABYLON.Color3(0,0,0);
         mesh.material = material;
 
