@@ -2,7 +2,7 @@
   "name": "hexwave",
   "version": "1.0.0",
   "description": "Webpage for 2D wave simulation on a hexagonal grid.",
-  "main": "./src/main.js",
+  "main": "./src/main.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
