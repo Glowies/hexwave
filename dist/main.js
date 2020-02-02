@@ -11127,6 +11127,81 @@ exports.SourcePropagator = SourcePropagator;
 
 /***/ }),
 
+/***/ "./src/Simulator.ts":
+/*!**************************!*\
+  !*** ./src/Simulator.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const BABYLON = __importStar(__webpack_require__(/*! babylonjs */ "./node_modules/babylonjs/babylon.js"));
+const HexGrid_1 = __webpack_require__(/*! ./HexGrid */ "./src/HexGrid.ts");
+const Hexagon_1 = __webpack_require__(/*! ./Hexagon */ "./src/Hexagon.ts");
+const Propagator_1 = __webpack_require__(/*! ./Propagator */ "./src/Propagator.ts");
+const WaveSource_1 = __webpack_require__(/*! ./WaveSource */ "./src/WaveSource.ts");
+class Simulator {
+    constructor(width, height, canvas) {
+        this._width = width;
+        this._height = height;
+        this._canvas = canvas;
+        this._engine = new BABYLON.Engine(canvas, true);
+        this._scene = this.createScene();
+        this._hexGrid = this.createGrid();
+        this._propagator = new Propagator_1.SourcePropagator(this._hexGrid);
+        this.addDefaultSources();
+        this._engine.runRenderLoop(this.update.bind(this));
+        window.addEventListener("resize", this._engine.resize);
+    }
+    update() {
+        this._scene.render();
+        this._propagator.update(this._engine.getDeltaTime() / 1000.0);
+    }
+    addDefaultSources() {
+        let centerPosition = this._hexGrid.getHex(12, 24).getPosition();
+        // propagator.addSource(new SinusoidSource(hexes.getHex(12,24).getPosition(), 1, -1, 0, .5, 2));
+        this._propagator.addSource(new WaveSource_1.MicSource(centerPosition, 1, -1, 128));
+        // propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 17), 1, -1, 0, .5, 0.5));
+        //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 1, -1,0, .5, 2));
+        //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 1, -1, 0, .5, 2));
+    }
+    createScene() {
+        let scene = new BABYLON.Scene(this._engine);
+        scene.clearColor = new BABYLON.Color4(17 / 255, 17 / 255, 17 / 255, 1);
+        // scene.clearColor = new BABYLON.Color4(94/255,140/255,166/255, 1);
+        // scene.clearColor = new BABYLON.Color4(0,0,0, 1); black
+        let camera = new BABYLON.ArcRotateCamera("Camera", -1.780818897873594, 0.7163083210065703, 100, new BABYLON.Vector3(0, -10, 0), scene);
+        camera.attachControl(this._canvas, true);
+        let keyLight = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(1, -2, 0.4), scene);
+        keyLight.intensity = 0.7;
+        let fillLight = new BABYLON.DirectionalLight("light2", new BABYLON.Vector3(-0.4, -1, 1), scene);
+        fillLight.intensity = 0.3;
+        let rimLight = new BABYLON.DirectionalLight("light3", new BABYLON.Vector3(0, -1, -1), scene);
+        rimLight.intensity = 0.4;
+        let ambientLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+        ambientLight.intensity = 0.3;
+        return scene;
+    }
+    createGrid() {
+        let zeroHex = Hexagon_1.Hexagon.ZeroHex();
+        return new HexGrid_1.ScaleGrid(this._width, this._height, 8, 1, zeroHex, this._scene);
+        ;
+    }
+}
+exports.Simulator = Simulator;
+
+
+/***/ }),
+
 /***/ "./src/WaveSource.ts":
 /*!***************************!*\
   !*** ./src/WaveSource.ts ***!
@@ -11300,77 +11375,13 @@ exports.TriangleSource = TriangleSource;
 
 "use strict";
 
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+const Simulator_1 = __webpack_require__(/*! ./Simulator */ "./src/Simulator.ts");
 let $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-const BABYLON = __importStar(__webpack_require__(/*! babylonjs */ "./node_modules/babylonjs/babylon.js"));
-const HexGrid_1 = __webpack_require__(/*! ./HexGrid */ "./src/HexGrid.ts");
-const Hexagon_1 = __webpack_require__(/*! ./Hexagon */ "./src/Hexagon.ts");
-const Propagator_1 = __webpack_require__(/*! ./Propagator */ "./src/Propagator.ts");
-const WaveSource_1 = __webpack_require__(/*! ./WaveSource */ "./src/WaveSource.ts");
 $(function () {
     let canvas = document.getElementById("renderCanvas"); // Get the canvas element
-    let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
-    let propagator;
-    let createScene = function () {
-        let scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color4(17 / 255, 17 / 255, 17 / 255, 1);
-        // scene.clearColor = new BABYLON.Color4(94/255,140/255,166/255, 1);
-        // scene.clearColor = new BABYLON.Color4(0,0,0, 1); black
-        let camera = new BABYLON.ArcRotateCamera("Camera", -1.780818897873594, 0.7163083210065703, 100, new BABYLON.Vector3(0, -10, 0), scene);
-        camera.attachControl(canvas, true);
-        let keyLight = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(1, -2, 0.4), scene);
-        keyLight.intensity = 0.7;
-        let fillLight = new BABYLON.DirectionalLight("light2", new BABYLON.Vector3(-0.4, -1, 1), scene);
-        fillLight.intensity = 0.3;
-        let rimLight = new BABYLON.DirectionalLight("light3", new BABYLON.Vector3(0, -1, -1), scene);
-        rimLight.intensity = 0.4;
-        let ambientLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-        ambientLight.intensity = 0.3;
-        //showWorldAxis(10, scene);
-        let zeroHex = Hexagon_1.Hexagon.ZeroHex();
-        let hexes = new HexGrid_1.ScaleGrid(48, 48, 8, 1, zeroHex, scene);
-        propagator = new Propagator_1.SourcePropagator(hexes);
-        // propagator.addSource(new SinusoidSource(hexes.getHex(12,24).getPosition(), 1, -1, 0, .5, 2));
-        propagator.addSource(new WaveSource_1.MicSource(hexes.getHex(12, 24).getPosition(), 1, -1, 128));
-        // propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 17), 1, -1, 0, .5, 0.5));
-        //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 1, -1,0, .5, 2));
-        //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 1, -1, 0, .5, 2));
-        return scene;
-    };
-    let scene = createScene();
-    engine.runRenderLoop(function () {
-        scene.render();
-        propagator.update(engine.getDeltaTime() / 1000.0);
-        //console.log(engine.getFps());
-    });
-    window.addEventListener("resize", function () {
-        engine.resize();
-    });
+    let sim = new Simulator_1.Simulator(48, 48, canvas);
 });
-function showWorldAxis(size, scene) {
-    let axisX = BABYLON.Mesh.CreateLines("axisX", [
-        BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0),
-        new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)
-    ], scene);
-    axisX.color = new BABYLON.Color3(1, 0, 0);
-    let axisY = BABYLON.Mesh.CreateLines("axisY", [
-        BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(-0.05 * size, size * 0.95, 0),
-        new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(0.05 * size, size * 0.95, 0)
-    ], scene);
-    axisY.color = new BABYLON.Color3(0, 1, 0);
-    let axisZ = BABYLON.Mesh.CreateLines("axisZ", [
-        BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, -0.05 * size, size * 0.95),
-        new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, 0.05 * size, size * 0.95)
-    ], scene);
-    axisZ.color = new BABYLON.Color3(0, 0, 1);
-}
 
 
 /***/ })
