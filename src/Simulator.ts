@@ -48,7 +48,7 @@ export class Simulator {
         let properties: WaveProperties = new WaveProperties(centerPosition, 1, -1, 40);
 
         // this._propagator.addSource(new SawtoothSource(properties, 0, .5, 2));
-        this._propagator.addSource(new MouseSource(properties, 1));
+        this._propagator.addSource(new MouseSource(properties, 2));
         // this._propagator.addSource(new MicSource(properties, 128));
         // propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 17), 1, -1, 0, .5, 0.5));
         //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 1, -1,0, .5, 2));

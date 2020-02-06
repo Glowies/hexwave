@@ -88,23 +88,23 @@ export abstract class WaveSource {
 }
 
 export class MouseSource extends WaveSource {
-    get sensitivity(): number {
-        return this._sensitivity;
+    get scaling(): number {
+        return this._scaling;
     }
 
-    set sensitivity(value: number) {
-        this._sensitivity = value;
+    set scaling(value: number) {
+        this._scaling = value;
     }
 
-    private _sensitivity: number;
+    private _scaling: number;
     private _yPosPoll: number;
     private _timeResidue: number;
     private readonly _pollPeriod: number;
     private readonly _samples: ShiftArray<number>;
 
-    constructor(properties: WaveProperties, sens: number){
+    constructor(properties: WaveProperties, scaling: number){
         super(properties);
-        this._sensitivity = sens;
+        this._scaling = scaling;
         this._yPosPoll = 0;
         this._timeResidue = 0;
         this._pollPeriod = 1/60;
@@ -120,15 +120,17 @@ export class MouseSource extends WaveSource {
     update(deltaTime: number): void {
         super.update(deltaTime);
         this._timeResidue += deltaTime;
+
+        let halfHeight: number = $(document).height() / 2;
         for(;this._timeResidue > this._pollPeriod; this._timeResidue -= this._pollPeriod){
-            this._samples.push(this._yPosPoll);
+            this._samples.push((this._yPosPoll - halfHeight) / halfHeight * -this._scaling);
         }
     }
 
     evaluate(distance: number): number {
         let timeToTarget: number = distance / this.properties.speed;
         let index = Math.floor(timeToTarget / this._pollPeriod);
-        return -(this._samples.get(index) - 540) / 540 * 2;
+        return this._samples.get(index);
     }
 }
 

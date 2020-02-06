@@ -11214,7 +11214,7 @@ class Simulator {
         let centerPosition = this._hexGrid.getHex(12, 24).getPosition();
         let properties = new WaveSource_1.WaveProperties(centerPosition, 1, -1, 40);
         // this._propagator.addSource(new SawtoothSource(properties, 0, .5, 2));
-        this._propagator.addSource(new WaveSource_1.MouseSource(properties, 1));
+        this._propagator.addSource(new WaveSource_1.MouseSource(properties, 2));
         // this._propagator.addSource(new MicSource(properties, 128));
         // propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 17), 1, -1, 0, .5, 0.5));
         //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 1, -1,0, .5, 2));
@@ -11320,20 +11320,20 @@ class WaveSource {
 }
 exports.WaveSource = WaveSource;
 class MouseSource extends WaveSource {
-    constructor(properties, sens) {
+    constructor(properties, scaling) {
         super(properties);
-        this._sensitivity = sens;
+        this._scaling = scaling;
         this._yPosPoll = 0;
         this._timeResidue = 0;
         this._pollPeriod = 1 / 60;
         this._samples = new ShiftArray_1.ShiftArray(256, 0);
         $(document).on("mousemove", this.mouseMoveCallback.bind(this));
     }
-    get sensitivity() {
-        return this._sensitivity;
+    get scaling() {
+        return this._scaling;
     }
-    set sensitivity(value) {
-        this._sensitivity = value;
+    set scaling(value) {
+        this._scaling = value;
     }
     mouseMoveCallback(e) {
         this._yPosPoll = e.screenY;
@@ -11341,14 +11341,15 @@ class MouseSource extends WaveSource {
     update(deltaTime) {
         super.update(deltaTime);
         this._timeResidue += deltaTime;
+        let halfHeight = $(document).height() / 2;
         for (; this._timeResidue > this._pollPeriod; this._timeResidue -= this._pollPeriod) {
-            this._samples.push(this._yPosPoll);
+            this._samples.push((this._yPosPoll - halfHeight) / halfHeight * -this._scaling);
         }
     }
     evaluate(distance) {
         let timeToTarget = distance / this.properties.speed;
         let index = Math.floor(timeToTarget / this._pollPeriod);
-        return -(this._samples.get(index) - 540) / 540 * 2;
+        return this._samples.get(index);
     }
 }
 exports.MouseSource = MouseSource;
