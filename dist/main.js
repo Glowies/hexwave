@@ -11203,12 +11203,11 @@ class Simulator {
         this._propagator = new Propagator_1.SourcePropagator(this._hexGrid);
         this.addDefaultSources();
         this._engine.runRenderLoop(this.update.bind(this));
-        window.addEventListener("resize", this._engine.resize);
+        window.addEventListener("resize", this._engine.resize.bind(this._engine));
     }
     update() {
         this._scene.render();
         this._propagator.update(this._engine.getDeltaTime() / 1000.0);
-        console.log();
     }
     addDefaultSources() {
         let centerPosition = this._hexGrid.getHex(12, 24).getPosition();
@@ -11225,8 +11224,8 @@ class Simulator {
         scene.clearColor = new BABYLON.Color4(17 / 255, 17 / 255, 17 / 255, 1);
         // scene.clearColor = new BABYLON.Color4(94/255,140/255,166/255, 1);
         // scene.clearColor = new BABYLON.Color4(0,0,0, 1); black
-        let camera = new BABYLON.ArcRotateCamera("Camera", -1.780818897873594, 0.7163083210065703, 100, new BABYLON.Vector3(0, -10, 0), scene);
-        camera.attachControl(this._canvas, true);
+        let camera = new BABYLON.ArcRotateCamera("Camera", -1.7370507197243723, 0.8659740084092771, 100, new BABYLON.Vector3(0, -10, 0), scene);
+        //camera.attachControl(this._canvas, true);
         let keyLight = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(1, -2, 0.4), scene);
         keyLight.intensity = 0.7;
         let fillLight = new BABYLON.DirectionalLight("light2", new BABYLON.Vector3(-0.4, -1, 1), scene);
@@ -11239,7 +11238,7 @@ class Simulator {
     }
     createGrid() {
         let zeroHex = Hexagon_1.Hexagon.ZeroHex();
-        return new HexGrid_1.ScaleGrid(this._width, this._height, 8, 1, zeroHex, this._scene);
+        return new HexGrid_1.ScaleGrid(this._width, this._height, 3, 1, zeroHex, this._scene);
     }
 }
 exports.Simulator = Simulator;

@@ -34,13 +34,12 @@ export class Simulator {
 
         this._engine.runRenderLoop(this.update.bind(this));
 
-        window.addEventListener("resize", this._engine.resize);
+        window.addEventListener("resize", this._engine.resize.bind(this._engine));
     }
 
     private update(): void{
         this._scene.render();
         this._propagator.update(this._engine.getDeltaTime() / 1000.0);
-        console.log()
     }
 
     private addDefaultSources(): void{
@@ -62,8 +61,8 @@ export class Simulator {
         // scene.clearColor = new BABYLON.Color4(94/255,140/255,166/255, 1);
         // scene.clearColor = new BABYLON.Color4(0,0,0, 1); black
 
-        let camera = new BABYLON.ArcRotateCamera("Camera", -1.780818897873594, 0.7163083210065703, 100, new BABYLON.Vector3(0,-10,0), scene);
-        camera.attachControl(this._canvas, true);
+        let camera = new BABYLON.ArcRotateCamera("Camera", -1.7370507197243723, 0.8659740084092771, 100, new BABYLON.Vector3(0,-10,0), scene);
+        //camera.attachControl(this._canvas, true);
 
         let keyLight = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(1, -2, 0.4), scene);
         keyLight.intensity = 0.7;
@@ -80,7 +79,7 @@ export class Simulator {
 
     private createGrid(): HexGrid{
         let zeroHex = Hexagon.ZeroHex();
-        return new ScaleGrid(this._width, this._height, 8, 1, zeroHex, this._scene);
+        return new ScaleGrid(this._width, this._height, 3, 1, zeroHex, this._scene);
     }
 
     // private showWorldAxis(size: number, scene: BABYLON.Scene): void{
