@@ -2,7 +2,15 @@ import * as BABYLON from "babylonjs";
 import {HexGrid, HeightGrid, ScaleGrid, RotationGrid, RadiusGrid} from "./HexGrid";
 import {Hexagon} from "./Hexagon";
 import {Propagator, SourcePropagator} from "./Propagator";
-import {WaveSource, SinusoidSource, SquareSource, SawtoothSource, TriangleSource, MicSource} from "./WaveSource";
+import {
+    WaveSource,
+    SinusoidSource,
+    SquareSource,
+    SawtoothSource,
+    TriangleSource,
+    MicSource,
+    WaveProperties
+} from "./WaveSource";
 
 export class Simulator {
     private _width: number;
@@ -36,8 +44,10 @@ export class Simulator {
 
     private addDefaultSources(): void{
         let centerPosition: BABYLON.Vector3 = this._hexGrid.getHex(12,24).getPosition();
-        // propagator.addSource(new SinusoidSource(hexes.getHex(12,24).getPosition(), 1, -1, 0, .5, 2));
-        this._propagator.addSource(new MicSource(centerPosition, 1, -1, 128));
+        let properties: WaveProperties = new WaveProperties(centerPosition, 1, -1, 40);
+
+        this._propagator.addSource(new SawtoothSource(properties, 0, .5, 2));
+        // this._propagator.addSource(new MicSource(centerPosition, 1, -1, 128));
         // propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 17), 1, -1, 0, .5, 0.5));
         //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 1, -1,0, .5, 2));
         //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 1, -1, 0, .5, 2));
@@ -68,7 +78,7 @@ export class Simulator {
 
     private createGrid(): HexGrid{
         let zeroHex = Hexagon.ZeroHex();
-        return new ScaleGrid(this._width, this._height, 8, 1, zeroHex, this._scene);;
+        return new ScaleGrid(this._width, this._height, 8, 1, zeroHex, this._scene);
     }
 
     // private showWorldAxis(size: number, scene: BABYLON.Scene): void{

@@ -1,6 +1,14 @@
 import {Vector3} from "babylonjs";
 
-export abstract class WaveSource {
+export class WaveProperties {
+    get speed(): number {
+        return this._speed;
+    }
+
+    set speed(value: number) {
+        this._speed = value;
+    }
+
     get endTime(): number {
         return this._endTime;
     }
@@ -25,23 +33,61 @@ export abstract class WaveSource {
         this._startTime = value;
     }
 
+    get timeElapsed(): number {
+        return this._timeElapsed;
+    }
+
     private _position: Vector3;
     private _posChanged: boolean;
     private _startTime: number;
     private _endTime: number;
+    private _speed: number;
+    private _timeElapsed: number;
 
-    protected constructor(pos: Vector3, start: number, end: number) {
+    constructor(pos: Vector3, start: number, end: number, speed: number) {
         this._position = pos;
-        this._posChanged = false;
         this._startTime = start;
         this._endTime = end;
+        this._speed = speed;
+        this._posChanged = false;
+        this._timeElapsed = 0;
     }
 
     public positionUpdated(): void {
         this._posChanged = false;
     }
 
-    abstract evaluate(totalTime: number, distance: number): number;
+    public incrementTime(deltaTime: number){
+        this._timeElapsed += deltaTime;
+    }
+
+    public isActive(): boolean{
+        return this._timeElapsed > this._startTime && this._timeElapsed < this._endTime;
+    }
+}
+
+export abstract class WaveSource {
+    get properties(): WaveProperties {
+        return this._properties;
+    }
+
+    private readonly _properties: WaveProperties;
+
+    protected constructor(properties: WaveProperties) {
+        this._properties = properties;
+    }
+
+    public update(deltaTime: number): void {
+        this.properties.incrementTime(deltaTime);
+    }
+
+    abstract evaluate(distance: number): number;
+}
+
+export class MouseSource extends WaveSource {
+    evaluate(distance: number): number{
+        return 1;
+    }
 }
 
 export class MicSource extends WaveSource {
@@ -52,8 +98,8 @@ export class MicSource extends WaveSource {
     private _triggerIndex: number;
     private _triggerValue: number;
 
-    constructor(pos: Vector3, start: number, end: number, maxDistance: number) {
-        super(pos, start, end);
+    constructor(properties: WaveProperties, maxDistance: number) {
+        super(properties);
         this._maxDistance = maxDistance;
         this._bufferSize = 512;
         this._buffer = new AudioBuffer({length: this._bufferSize, numberOfChannels: 1, sampleRate: 48000});
@@ -100,7 +146,7 @@ export class MicSource extends WaveSource {
         }
     }
 
-    evaluate(totalTime: number, distance: number): number{
+    evaluate(distance: number): number{
         let n = this._bufferSize - 1;
         let index = Math.max(0, (this._triggerIndex - Math.floor(distance / this._maxDistance * n)) % n);
         return this._buffer.getChannelData(0)[index] * this._gain;
@@ -135,8 +181,8 @@ export abstract class PeriodicSource extends WaveSource {
     private _amplitude: number;
     private _frequency: number;
 
-    constructor(pos: Vector3, start: number, end: number, phase: number, amplitude: number, frequency: number){
-        super(pos, start, end);
+    constructor(properties: WaveProperties, phase: number, amplitude: number, frequency: number){
+        super(properties);
         this._phase = phase;
         this._amplitude = amplitude;
         this._frequency = frequency;
@@ -144,43 +190,50 @@ export abstract class PeriodicSource extends WaveSource {
 }
 
 export class SinusoidSource extends PeriodicSource {
-    evaluate(totalTime: number, distance: number): number {
-        if(totalTime < this.startTime)
+    evaluate(distance: number): number {
+        let timeToTarget: number = distance / this.properties.speed;
+        let relativeTime: number = this.properties.timeElapsed - timeToTarget;
+        if(relativeTime < this.properties.startTime)
             return 0;
-        let frequencyComponent = 2 * Math.PI * this.frequency * (totalTime - this.startTime);
+        let frequencyComponent = 2 * Math.PI * this.frequency * (relativeTime - this.properties.startTime);
         return this.amplitude * Math.sin(frequencyComponent + this.phase);
     }
 }
 
 export class SquareSource extends PeriodicSource {
-    evaluate(totalTime: number, distance: number): number {
-        if(totalTime < this.startTime)
+    evaluate(distance: number): number {
+        let timeToTarget: number = distance / this.properties.speed;
+        let relativeTime: number = this.properties.timeElapsed - timeToTarget;
+        if(relativeTime < this.properties.startTime)
             return 0;
         let period = 1 / this.frequency;
         let phaseShift = period * this.phase / 2.0 / Math.PI;
-        let remainder = (totalTime - this.startTime + phaseShift) % period;
+        let remainder = (relativeTime - this.properties.startTime + phaseShift) % period;
         return (remainder < period/2.0) ? this.amplitude : -this.amplitude;
     }
 }
 
 export class SawtoothSource extends PeriodicSource {
-    evaluate(totalTime: number, distance: number): number {
-        if(totalTime < this.startTime)
+    evaluate(distance: number): number {
+        let relativeTime: number = this.properties.timeElapsed - distance / this.properties.speed;
+        if(relativeTime < this.properties.startTime)
             return 0;
         let period = 1 / this.frequency;
         let phaseShift = period * this.phase / 2.0 / Math.PI;
-        let remainder = (totalTime - this.startTime + phaseShift) % period;
+        let remainder = (relativeTime - this.properties.startTime + phaseShift) % period;
         return (2 * remainder / period - 1) * this.amplitude;
     }
 }
 
 export class TriangleSource extends PeriodicSource {
-    evaluate(totalTime: number, distance: number): number {
-        if(totalTime < this.startTime)
+    evaluate(distance: number): number {
+        let timeToTarget: number = distance / this.properties.speed;
+        let relativeTime: number = this.properties.timeElapsed - timeToTarget;
+        if(relativeTime < this.properties.startTime)
             return 0;
         let period = 1 / this.frequency;
         let phaseShift = period * this.phase / 2.0 / Math.PI;
-        let remainder = (totalTime - this.startTime + period / 4.0 + phaseShift) % period;
+        let remainder = (relativeTime - this.properties.startTime + period / 4.0 + phaseShift) % period;
         let subRemainder = remainder % (period / 2.0);
         return (4 * subRemainder / period - 1) * this.amplitude * (remainder > period / 2.0 ? 1 : -1);
     }

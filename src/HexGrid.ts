@@ -78,7 +78,7 @@ export abstract class HexGrid {
         for(let i=0; i<this._width; i++){
             result[i] = [];
             for(let j=0; j<this._height; j++){
-                result[i][j] = BABYLON.Vector3.Distance(src.position, this._grid[i][j].getPosition());
+                result[i][j] = BABYLON.Vector3.Distance(src.properties.position, this._grid[i][j].getPosition());
             }
         }
         return result;

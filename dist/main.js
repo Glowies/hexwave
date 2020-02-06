@@ -10824,7 +10824,7 @@ class HexGrid {
         for (let i = 0; i < this._width; i++) {
             result[i] = [];
             for (let j = 0; j < this._height; j++) {
-                result[i][j] = BABYLON.Vector3.Distance(src.position, this._grid[i][j].getPosition());
+                result[i][j] = BABYLON.Vector3.Distance(src.properties.position, this._grid[i][j].getPosition());
             }
         }
         return result;
@@ -11094,7 +11094,6 @@ class SourcePropagator extends Propagator {
     constructor(grid) {
         super(grid);
         this._delayMatrices = [];
-        this._waveSpeed = 40;
     }
     addSource(src) {
         super.addSource(src);
@@ -11109,13 +11108,15 @@ class SourcePropagator extends Propagator {
     }
     update(deltaTime) {
         super.update(deltaTime);
+        for (let srcIndex in this._sources) {
+            this._sources[srcIndex].update(deltaTime);
+        }
         for (let i = 0; i < this._grid.width; i++) {
             for (let j = 0; j < this._grid.height; j++) {
                 let sum = 0;
                 for (let srcIndex in this._sources) {
                     let distance = this._delayMatrices[srcIndex][i][j];
-                    let relativeTime = this._timeElapsed - distance / this._waveSpeed;
-                    sum += this._sources[srcIndex].evaluate(relativeTime, distance);
+                    sum += this._sources[srcIndex].evaluate(distance);
                 }
                 this._grid.setHexValue(i, j, sum);
             }
@@ -11168,8 +11169,9 @@ class Simulator {
     }
     addDefaultSources() {
         let centerPosition = this._hexGrid.getHex(12, 24).getPosition();
-        // propagator.addSource(new SinusoidSource(hexes.getHex(12,24).getPosition(), 1, -1, 0, .5, 2));
-        this._propagator.addSource(new WaveSource_1.MicSource(centerPosition, 1, -1, 128));
+        let properties = new WaveSource_1.WaveProperties(centerPosition, 1, -1, 10);
+        this._propagator.addSource(new WaveSource_1.SawtoothSource(properties, 0, .5, 2));
+        // this._propagator.addSource(new MicSource(centerPosition, 1, -1, 128));
         // propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 17), 1, -1, 0, .5, 0.5));
         //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 1, -1,0, .5, 2));
         //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 1, -1, 0, .5, 2));
@@ -11194,7 +11196,6 @@ class Simulator {
     createGrid() {
         let zeroHex = Hexagon_1.Hexagon.ZeroHex();
         return new HexGrid_1.ScaleGrid(this._width, this._height, 8, 1, zeroHex, this._scene);
-        ;
     }
 }
 exports.Simulator = Simulator;
@@ -11212,12 +11213,20 @@ exports.Simulator = Simulator;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-class WaveSource {
-    constructor(pos, start, end) {
+class WaveProperties {
+    constructor(pos, start, end, speed) {
         this._position = pos;
-        this._posChanged = false;
         this._startTime = start;
         this._endTime = end;
+        this._speed = speed;
+        this._posChanged = false;
+        this._timeElapsed = 0;
+    }
+    get speed() {
+        return this._speed;
+    }
+    set speed(value) {
+        this._speed = value;
     }
     get endTime() {
         return this._endTime;
@@ -11238,14 +11247,41 @@ class WaveSource {
     set startTime(value) {
         this._startTime = value;
     }
+    get timeElapsed() {
+        return this._timeElapsed;
+    }
     positionUpdated() {
         this._posChanged = false;
     }
+    incrementTime(deltaTime) {
+        this._timeElapsed += deltaTime;
+    }
+    isActive() {
+        return this._timeElapsed > this._startTime && this._timeElapsed < this._endTime;
+    }
+}
+exports.WaveProperties = WaveProperties;
+class WaveSource {
+    constructor(properties) {
+        this._properties = properties;
+    }
+    get properties() {
+        return this._properties;
+    }
+    update(deltaTime) {
+        this.properties.incrementTime(deltaTime);
+    }
 }
 exports.WaveSource = WaveSource;
+class MouseSource extends WaveSource {
+    evaluate(distance) {
+        return 1;
+    }
+}
+exports.MouseSource = MouseSource;
 class MicSource extends WaveSource {
-    constructor(pos, start, end, maxDistance) {
-        super(pos, start, end);
+    constructor(properties, maxDistance) {
+        super(properties);
         this._maxDistance = maxDistance;
         this._bufferSize = 512;
         this._buffer = new AudioBuffer({ length: this._bufferSize, numberOfChannels: 1, sampleRate: 48000 });
@@ -11285,7 +11321,7 @@ class MicSource extends WaveSource {
             break;
         }
     }
-    evaluate(totalTime, distance) {
+    evaluate(distance) {
         let n = this._bufferSize - 1;
         let index = Math.max(0, (this._triggerIndex - Math.floor(distance / this._maxDistance * n)) % n);
         return this._buffer.getChannelData(0)[index] * this._gain;
@@ -11293,8 +11329,8 @@ class MicSource extends WaveSource {
 }
 exports.MicSource = MicSource;
 class PeriodicSource extends WaveSource {
-    constructor(pos, start, end, phase, amplitude, frequency) {
-        super(pos, start, end);
+    constructor(properties, phase, amplitude, frequency) {
+        super(properties);
         this._phase = phase;
         this._amplitude = amplitude;
         this._frequency = frequency;
@@ -11320,43 +11356,50 @@ class PeriodicSource extends WaveSource {
 }
 exports.PeriodicSource = PeriodicSource;
 class SinusoidSource extends PeriodicSource {
-    evaluate(totalTime, distance) {
-        if (totalTime < this.startTime)
+    evaluate(distance) {
+        let timeToTarget = distance / this.properties.speed;
+        let relativeTime = this.properties.timeElapsed - timeToTarget;
+        if (relativeTime < this.properties.startTime)
             return 0;
-        let frequencyComponent = 2 * Math.PI * this.frequency * (totalTime - this.startTime);
+        let frequencyComponent = 2 * Math.PI * this.frequency * (relativeTime - this.properties.startTime);
         return this.amplitude * Math.sin(frequencyComponent + this.phase);
     }
 }
 exports.SinusoidSource = SinusoidSource;
 class SquareSource extends PeriodicSource {
-    evaluate(totalTime, distance) {
-        if (totalTime < this.startTime)
+    evaluate(distance) {
+        let timeToTarget = distance / this.properties.speed;
+        let relativeTime = this.properties.timeElapsed - timeToTarget;
+        if (relativeTime < this.properties.startTime)
             return 0;
         let period = 1 / this.frequency;
         let phaseShift = period * this.phase / 2.0 / Math.PI;
-        let remainder = (totalTime - this.startTime + phaseShift) % period;
+        let remainder = (relativeTime - this.properties.startTime + phaseShift) % period;
         return (remainder < period / 2.0) ? this.amplitude : -this.amplitude;
     }
 }
 exports.SquareSource = SquareSource;
 class SawtoothSource extends PeriodicSource {
-    evaluate(totalTime, distance) {
-        if (totalTime < this.startTime)
+    evaluate(distance) {
+        let relativeTime = this.properties.timeElapsed - distance / this.properties.speed;
+        if (relativeTime < this.properties.startTime)
             return 0;
         let period = 1 / this.frequency;
         let phaseShift = period * this.phase / 2.0 / Math.PI;
-        let remainder = (totalTime - this.startTime + phaseShift) % period;
+        let remainder = (relativeTime - this.properties.startTime + phaseShift) % period;
         return (2 * remainder / period - 1) * this.amplitude;
     }
 }
 exports.SawtoothSource = SawtoothSource;
 class TriangleSource extends PeriodicSource {
-    evaluate(totalTime, distance) {
-        if (totalTime < this.startTime)
+    evaluate(distance) {
+        let timeToTarget = distance / this.properties.speed;
+        let relativeTime = this.properties.timeElapsed - timeToTarget;
+        if (relativeTime < this.properties.startTime)
             return 0;
         let period = 1 / this.frequency;
         let phaseShift = period * this.phase / 2.0 / Math.PI;
-        let remainder = (totalTime - this.startTime + period / 4.0 + phaseShift) % period;
+        let remainder = (relativeTime - this.properties.startTime + period / 4.0 + phaseShift) % period;
         let subRemainder = remainder % (period / 2.0);
         return (4 * subRemainder / period - 1) * this.amplitude * (remainder > period / 2.0 ? 1 : -1);
     }
