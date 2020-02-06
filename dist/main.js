@@ -11128,6 +11128,48 @@ exports.SourcePropagator = SourcePropagator;
 
 /***/ }),
 
+/***/ "./src/ShiftArray.ts":
+/*!***************************!*\
+  !*** ./src/ShiftArray.ts ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class ShiftArray {
+    constructor(size, initialValue) {
+        this._array = [];
+        this._start = 0;
+        this._size = size;
+        for (let i = 0; i < size; i++) {
+            this.push(initialValue);
+        }
+    }
+    push(item) {
+        this._array[this._start] = item;
+        this._start = (this._start + 1) % this._size;
+    }
+    get(index) {
+        return this._array[mod(this._start - index - 1, this._size)];
+    }
+    toString() {
+        let result = "[ " + this.get(0);
+        for (let i = 1; i < this._size; i++) {
+            result += ", " + this.get(i);
+        }
+        return result + " ]";
+    }
+}
+exports.ShiftArray = ShiftArray;
+function mod(x, y) {
+    return x - y * Math.floor(x / y);
+}
+
+
+/***/ }),
+
 /***/ "./src/Simulator.ts":
 /*!**************************!*\
   !*** ./src/Simulator.ts ***!
@@ -11166,12 +11208,14 @@ class Simulator {
     update() {
         this._scene.render();
         this._propagator.update(this._engine.getDeltaTime() / 1000.0);
+        console.log();
     }
     addDefaultSources() {
         let centerPosition = this._hexGrid.getHex(12, 24).getPosition();
-        let properties = new WaveSource_1.WaveProperties(centerPosition, 1, -1, 10);
-        this._propagator.addSource(new WaveSource_1.SawtoothSource(properties, 0, .5, 2));
-        // this._propagator.addSource(new MicSource(centerPosition, 1, -1, 128));
+        let properties = new WaveSource_1.WaveProperties(centerPosition, 1, -1, 40);
+        // this._propagator.addSource(new SawtoothSource(properties, 0, .5, 2));
+        this._propagator.addSource(new WaveSource_1.MouseSource(properties, 1));
+        // this._propagator.addSource(new MicSource(properties, 128));
         // propagator.addSource(new SinusoidSource(new BABYLON.Vector3(0, 0, 17), 1, -1, 0, .5, 0.5));
         //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(20, 0, 0), 1, -1,0, .5, 2));
         //  propagator.addSource(new SinusoidSource(new BABYLON.Vector3(-20, 0, 0), 1, -1, 0, .5, 2));
@@ -11213,6 +11257,8 @@ exports.Simulator = Simulator;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+const ShiftArray_1 = __webpack_require__(/*! ./ShiftArray */ "./src/ShiftArray.ts");
+let $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 class WaveProperties {
     constructor(pos, start, end, speed) {
         this._position = pos;
@@ -11274,8 +11320,35 @@ class WaveSource {
 }
 exports.WaveSource = WaveSource;
 class MouseSource extends WaveSource {
+    constructor(properties, sens) {
+        super(properties);
+        this._sensitivity = sens;
+        this._yPosPoll = 0;
+        this._timeResidue = 0;
+        this._pollPeriod = 1 / 60;
+        this._samples = new ShiftArray_1.ShiftArray(256, 0);
+        $(document).on("mousemove", this.mouseMoveCallback.bind(this));
+    }
+    get sensitivity() {
+        return this._sensitivity;
+    }
+    set sensitivity(value) {
+        this._sensitivity = value;
+    }
+    mouseMoveCallback(e) {
+        this._yPosPoll = e.screenY;
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this._timeResidue += deltaTime;
+        for (; this._timeResidue > this._pollPeriod; this._timeResidue -= this._pollPeriod) {
+            this._samples.push(this._yPosPoll);
+        }
+    }
     evaluate(distance) {
-        return 1;
+        let timeToTarget = distance / this.properties.speed;
+        let index = Math.floor(timeToTarget / this._pollPeriod);
+        return -(this._samples.get(index) - 540) / 540 * 2;
     }
 }
 exports.MouseSource = MouseSource;

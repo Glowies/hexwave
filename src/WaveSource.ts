@@ -1,4 +1,7 @@
 import {Vector3} from "babylonjs";
+import {ShiftArray} from "./ShiftArray";
+
+let $ = require("jquery");
 
 export class WaveProperties {
     get speed(): number {
@@ -85,8 +88,47 @@ export abstract class WaveSource {
 }
 
 export class MouseSource extends WaveSource {
-    evaluate(distance: number): number{
-        return 1;
+    get sensitivity(): number {
+        return this._sensitivity;
+    }
+
+    set sensitivity(value: number) {
+        this._sensitivity = value;
+    }
+
+    private _sensitivity: number;
+    private _yPosPoll: number;
+    private _timeResidue: number;
+    private readonly _pollPeriod: number;
+    private readonly _samples: ShiftArray<number>;
+
+    constructor(properties: WaveProperties, sens: number){
+        super(properties);
+        this._sensitivity = sens;
+        this._yPosPoll = 0;
+        this._timeResidue = 0;
+        this._pollPeriod = 1/60;
+        this._samples = new ShiftArray<number>(256, 0);
+
+        $(document).on("mousemove", this.mouseMoveCallback.bind(this));
+    }
+
+    private mouseMoveCallback(e: MouseEvent){
+        this._yPosPoll = e.screenY;
+    }
+
+    update(deltaTime: number): void {
+        super.update(deltaTime);
+        this._timeResidue += deltaTime;
+        for(;this._timeResidue > this._pollPeriod; this._timeResidue -= this._pollPeriod){
+            this._samples.push(this._yPosPoll);
+        }
+    }
+
+    evaluate(distance: number): number {
+        let timeToTarget: number = distance / this.properties.speed;
+        let index = Math.floor(timeToTarget / this._pollPeriod);
+        return -(this._samples.get(index) - 540) / 540 * 2;
     }
 }
 
