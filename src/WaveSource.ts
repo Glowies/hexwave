@@ -111,10 +111,17 @@ export class MouseSource extends WaveSource {
         this._samples = new ShiftArray<number>(256, 0);
 
         $(document).on("mousemove", this.mouseMoveCallback.bind(this));
+        $(document).on("touchmove", this.touchCallback.bind(this));
     }
 
     private mouseMoveCallback(e: MouseEvent){
         this._yPosPoll = e.screenY;
+    }
+
+    private touchCallback(e: TouchEvent){
+        if(e.touches.length == 0)
+            return;
+        this._yPosPoll = e.touches[0].screenY;
     }
 
     update(deltaTime: number): void {

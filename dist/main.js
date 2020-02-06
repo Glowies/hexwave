@@ -11327,6 +11327,7 @@ class MouseSource extends WaveSource {
         this._pollPeriod = 1 / 60;
         this._samples = new ShiftArray_1.ShiftArray(256, 0);
         $(document).on("mousemove", this.mouseMoveCallback.bind(this));
+        $(document).on("touchmove", this.touchCallback.bind(this));
     }
     get scaling() {
         return this._scaling;
@@ -11336,6 +11337,11 @@ class MouseSource extends WaveSource {
     }
     mouseMoveCallback(e) {
         this._yPosPoll = e.screenY;
+    }
+    touchCallback(e) {
+        if (e.touches.length == 0)
+            return;
+        this._yPosPoll = e.touches[0].screenY;
     }
     update(deltaTime) {
         super.update(deltaTime);
