@@ -20,7 +20,7 @@
     "babylonjs": "^4.0.3",
     "babylonjs-loaders": "^4.0.3",
     "bootswatch": "^4.4.1",
-    "jquery": "^3.4.1"
+    "jquery": "^3.5.0"
   },
   "devDependencies": {
     "@types/webpack-env": "^1.14.1",
